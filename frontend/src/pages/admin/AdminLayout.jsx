@@ -9,6 +9,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import CategoryIcon from '@mui/icons-material/Category';
 import ReportIcon from '@mui/icons-material/Report';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MenuIcon from '@mui/icons-material/Menu';
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
@@ -20,6 +21,7 @@ import ManageUsers from './ManageUsers';
 import ManageDepartments from './ManageDepartments';
 import AllComplaints from './AllComplaints';
 import Analytics from './Analytics';
+import KnowledgeBase from './KnowledgeBase';
 
 const DRAWER_WIDTH = 250;
 
@@ -29,6 +31,7 @@ const navItems = [
     { label: 'Manage Users', icon: <PeopleIcon />, path: '/admin/users' },
     { label: 'Manage Departments', icon: <CategoryIcon />, path: '/admin/departments' },
     { label: 'All Complaints', icon: <ReportIcon />, path: '/admin/complaints' },
+    { label: 'Knowledge Base', icon: <AutoStoriesIcon />, path: '/admin/knowledge-base' },
     { label: 'Analytics', icon: <BarChartIcon />, path: '/admin/analytics' },
 ];
 
@@ -104,6 +107,7 @@ const AdminLayout = () => {
                     <Route path="/users" element={<ManageUsers />} />
                     <Route path="/departments" element={<ManageDepartments />} />
                     <Route path="/complaints" element={<AllComplaints />} />
+                    <Route path="/knowledge-base" element={<KnowledgeBase />} />
                     <Route path="/analytics" element={<Analytics />} />
                 </Routes>
             </Box>

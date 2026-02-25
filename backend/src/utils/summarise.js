@@ -1,5 +1,9 @@
 import { genAI } from "../config/genAI.js";
 
+/**
+ * Summarizes the retrieved context to answer the user's query.
+ * Strictly uses provided data only (Grounded RAG).
+ */
 export const summarizeResponse = async (query, context) => {
     try {
         if (!query || !context) {
@@ -9,39 +13,40 @@ export const summarizeResponse = async (query, context) => {
             };
         }
 
-        const response = await genAI.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: `
-            You are an expert assistant for Adama Science and Technology University (ASTU).
-Answer the user's question using ONLY the provided data.
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-Rules:
-- Plain text only
-- No formatting, lists, or symbols
-- Clear and concise sentences
-- Do not add or guess information
-- Give Clear explanation
+        const prompt = `
+You are the ASTU Smart Complaint System Assistant. 
+Your task is to answer the user's question by using ONLY the provided knowledge context.
 
-Question:
-${query}
+RULES:
+- If the answer is not in the context, strictly say: "I am sorry, but I don't have information about that in the ASTU knowledge base. Please contact the administration."
+- Do NOT use your own knowledge to answer.
+- Keep the response professional and helpful.
+- Use plain text without excessive formatting.
 
-Data:
+QUESTION: "${query}"
+
+KNOWLEDGE CONTEXT:
+---
 ${context}
-      `
-        });
+---
 
+ANSWER:`;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
 
         return {
             success: true,
-            finalResponse: response.text
+            finalResponse: response.text()
         };
 
     } catch (err) {
         console.error("Summarization error:", err);
         return {
             success: false,
-            error: "LLM summarization failed: " + (err.message || "Unknown error")
+            error: "Generation failed: " + (err.message || "Unknown error")
         };
     }
 };
-

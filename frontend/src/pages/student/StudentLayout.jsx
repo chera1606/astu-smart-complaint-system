@@ -17,6 +17,7 @@ import StudentOverview from './StudentOverview';
 import SubmitComplaint from './SubmitComplaint';
 import MyComplaints from './MyComplaints';
 import AIChatPage from './AIChatPage';
+import FloatingChat from '../../components/FloatingChat';
 
 const DRAWER_WIDTH = 240;
 
@@ -87,6 +88,7 @@ const StudentLayout = () => {
                     <Route path="/my-complaints" element={<MyComplaints />} />
                     <Route path="/ai" element={<AIChatPage />} />
                 </Routes>
+                <FloatingChat />
             </Box>
         </Box>
     );

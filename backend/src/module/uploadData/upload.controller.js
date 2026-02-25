@@ -1,24 +1,18 @@
 import { uploadDataService } from "./upload.service.js";
-import uploadDataSchema from "./upload.schema.js";
 
 export const uploadDataController = {
-    async uploadData(req, res) {
+    async handleUpload(req, res) {
         try {
-            // 1. Validate input
-            const validation = uploadDataSchema.safeParse(req.body);
-            if (!validation.success) {
+            // Check if file exists
+            if (!req.file) {
                 return res.status(400).json({
                     success: false,
-                    error: validation.error.errors[0].message
+                    error: "No file uploaded. Please provide a PDF or TXT file."
                 });
             }
 
-            const { text } = validation.data;
+            const result = await uploadDataService.upload(req.file, req.body.sourceName);
 
-            // 2. Call Service
-            const result = await uploadDataService.upload(text);
-
-            // 3. Handle Service Result
             if (!result.success) {
                 return res.status(500).json({
                     success: false,
@@ -28,15 +22,16 @@ export const uploadDataController = {
 
             return res.status(200).json({
                 success: true,
-                data: result.data
+                message: result.data.message,
+                count: result.data.count
             });
 
         } catch (error) {
-            console.error("Error in uploadDataController.uploadData:", error);
+            console.error("Upload Controller Error:", error);
             return res.status(500).json({
                 success: false,
-                error: "Internal server error"
+                error: "Internal server error during upload"
             });
         }
     }
-}
+};

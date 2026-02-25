@@ -1,27 +1,29 @@
-import { Data } from "../model/db.js";
+import { KnowledgeBase } from "../model/knowledge.model.js";
 
+/**
+ * Retrieves relevant context chunks from MongoDB Atlas Vector Search.
+ * Strictly requires the 'vector_index' to be set up in Atlas.
+ */
 export const retrieveRelevantData = async (vector) => {
     try {
         if (!vector || !Array.isArray(vector)) {
-            return {
-                success: false,
-                error: "Valid vector is required for retrieval"
-            };
+            return { success: false, error: "Valid vector is required" };
         }
 
-        // Using MongoDB Atlas Vector Search (requires index named 'vector_index')
-        const results = await Data.aggregate([
+        // Atlas Vector Search aggregation
+        const results = await KnowledgeBase.aggregate([
             {
                 $vectorSearch: {
                     index: "vector_index",
                     path: "embedding",
                     queryVector: vector,
-                    numCandidates: 100,
-                    limit: 5
+                    numCandidates: 100, // Search space
+                    limit: 5 // Top matches
                 }
             },
             {
                 $project: {
+                    _id: 0,
                     content: 1,
                     score: { $meta: "vectorSearchScore" }
                 }
@@ -29,27 +31,19 @@ export const retrieveRelevantData = async (vector) => {
         ]);
 
         if (!results || results.length === 0) {
-            return {
-                success: true,
-                data: ""
-            };
+            return { success: true, data: "" };
         }
 
+        // Combine retrieved chunks into a single context string
+        const context = results.map(r => r.content).join("\n\n---\n\n");
 
-        const combinedContent = results.map(r => r.content).join("\n\n");
-
-
-        return {
-            success: true,
-            data: combinedContent
-        };
+        return { success: true, data: context };
 
     } catch (error) {
-        console.error("Data retrieval error:", error);
-
+        console.error("Vector Search Error:", error);
         return {
             success: false,
-            error: "Vector search failed. Ensure 'vector_index' is created in MongoDB Atlas and configured correctly."
+            error: "Context retrieval failed. Is 'vector_index' created in Atlas? " + error.message
         };
     }
 };

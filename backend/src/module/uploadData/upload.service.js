@@ -1,53 +1,75 @@
+import pdf from "pdf-parse";
 import { chunkText } from "../../utils/chunk.js";
 import { getGeminiEmbedding } from "../../utils/embedData.js";
-import { Data } from "../../model/db.js";
+import { KnowledgeBase } from "../../model/knowledge.model.js";
 
 export const uploadDataService = {
-    async upload(text) {
+    /**
+     * Extracts text from buffer, chunks it, embeds it, and saves to KnowledgeBase.
+     * Supports PDF and Plain Text.
+     */
+    async upload(file, sourceName) {
         try {
-            // 1. Chunk the text
-            const chunks = await chunkText(text);
-            if (!chunks || chunks.length === 0) {
-                return {
-                    success: false,
-                    error: "Failed to chunk text or text is empty"
-                };
+            let text = "";
+
+            // 1. Extract Text
+            if (file.mimetype === "application/pdf") {
+                const data = await pdf(file.buffer);
+                text = data.text;
+            } else if (file.mimetype === "text/plain") {
+                text = file.buffer.toString("utf-8");
+            } else {
+                throw new Error("Unsupported file type. Please upload PDF or TXT.");
             }
 
-            // 2. Generate embeddings for all chunks in one go (embedData.js handles batching)
-            const embeddingResult = await getGeminiEmbedding(chunks, true);
+            if (!text.trim()) {
+                throw new Error("No readable text found in the document.");
+            }
 
+            // 2. Chunk the text (RecursiveCharacterTextSplitter)
+            const chunks = await chunkText(text);
+            if (!chunks || chunks.length === 0) {
+                throw new Error("Failed to split text into chunks.");
+            }
+
+            // 3. Generate embeddings
+            console.log(`Generating embeddings for ${chunks.length} chunks...`);
+            const embeddingResult = await getGeminiEmbedding(chunks, true);
             if (!embeddingResult.success) {
-                return {
-                    success: false,
-                    error: embeddingResult.error || "Failed to generate embeddings"
-                };
+                throw new Error(embeddingResult.error);
             }
 
             const vectors = embeddingResult.data;
 
-            // 3. Prepare documents for insertion
+            // 4. Prepare and save documents
             const documents = chunks.map((chunk, index) => ({
                 content: chunk,
-                embedding: vectors[index]
+                embedding: vectors[index],
+                metadata: {
+                    source: "admin-upload",
+                    fileName: sourceName || file.originalname,
+                    fileType: file.mimetype,
+                    chunkIndex: index,
+                    uploadedAt: new Date()
+                }
             }));
 
-            // 4. Save to database
-            const savedData = await Data.insertMany(documents);
+            const saved = await KnowledgeBase.insertMany(documents);
 
             return {
                 success: true,
                 data: {
-                    count: savedData.length,
-                    message: "Data uploaded and embedded successfully"
+                    count: saved.length,
+                    fileName: file.originalname,
+                    message: `Successfully indexed ${saved.length} chunks from ${file.originalname}`
                 }
             };
 
         } catch (error) {
-            console.error("Error in uploadDataService.upload:", error);
+            console.error("Upload Service Error:", error);
             return {
                 success: false,
-                error: error.message || "An unexpected error occurred during upload"
+                error: error.message || "An unexpected error occurred during document processing"
             };
         }
     }
