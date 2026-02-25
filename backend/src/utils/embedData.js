@@ -6,24 +6,25 @@ import { genAI } from "../config/genAI.js";
  */
 export async function getGeminiEmbedding(chunks, isAddingData = true, batchSize = 20) {
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
         const vectors = [];
 
         for (let i = 0; i < chunks.length; i += batchSize) {
             const batch = chunks.slice(i, i + batchSize);
 
-            const result = await model.batchEmbedContents({
-                requests: batch.map((text) => ({
-                    content: { parts: [{ text }] },
+            // Process each chunk individually (new SDK doesn't support batch for embedContent)
+            for (const text of batch) {
+                const result = await genAI.models.embedContent({
+                    model: "gemini-embedding-001",
+                    contents: text,
                     taskType: isAddingData ? "RETRIEVAL_DOCUMENT" : "RETRIEVAL_QUERY",
-                })),
-            });
+                });
 
-            if (!result.embeddings) {
-                return { success: false, error: "Empty batch embedding response" };
+                if (!result || !result.embedding?.values) {
+                    return { success: false, error: "Empty embedding response" };
+                }
+
+                vectors.push(result.embedding.values);
             }
-
-            vectors.push(...result.embeddings.map(e => e.values));
         }
 
         return { success: true, data: vectors };

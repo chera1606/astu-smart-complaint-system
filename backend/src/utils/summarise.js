@@ -13,8 +13,6 @@ export const summarizeResponse = async (query, context) => {
             };
         }
 
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
         const prompt = `
 You are the ASTU Smart Complaint System Assistant. 
 Your task is to answer the user's question by using ONLY the provided knowledge context.
@@ -34,12 +32,14 @@ ${context}
 
 ANSWER:`;
 
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
+        const result = await genAI.models.generateContent({
+            model: "gemini-1.5-flash",
+            contents: prompt
+        });
 
         return {
             success: true,
-            finalResponse: response.text()
+            finalResponse: result.text
         };
 
     } catch (err) {

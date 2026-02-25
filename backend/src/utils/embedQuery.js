@@ -7,11 +7,10 @@ export const embedGeneratedQuery = async (query) => {
     try {
         if (!query) return { success: false, error: "Query is required" };
 
-        const model = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
-
-        const result = await model.embedContent({
-            content: { parts: [{ text: query }] },
-            taskType: "RETRIEVAL_QUERY"
+        const result = await genAI.models.embedContent({
+            model: "gemini-embedding-001",
+            contents: query,
+            taskType: "RETRIEVAL_QUERY",
         });
 
         if (!result.embedding?.values) {
