@@ -1,4 +1,6 @@
-import pdf from "pdf-parse";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const pdf = require("pdf-parse");
 import { chunkText } from "../../utils/chunk.js";
 import { getGeminiEmbedding } from "../../utils/embedData.js";
 import { KnowledgeBase } from "../../model/knowledge.model.js";
