@@ -1,14 +1,15 @@
 import express from 'express';
-import { getCategories, createCategory, deleteCategory } from './category.controller.js';
+import { getCategories, createCategory, updateCategory, deleteCategory } from './category.controller.js';
 import { protect, admin } from '../../middleware/auth.middleware.js';
 
 const router = express.Router();
 
 router.route('/')
-    .get(protect, getCategories) // All authenticated users can see categories
+    .get(protect, getCategories)
     .post(protect, admin, createCategory);
 
 router.route('/:id')
+    .put(protect, admin, updateCategory)
     .delete(protect, admin, deleteCategory);
 
 export default router;

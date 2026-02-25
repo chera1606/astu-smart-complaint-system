@@ -29,6 +29,16 @@ const userSchema = new mongoose.Schema({
         required: function () {
             return this.role === 'staff';
         }
+    },
+    // Student-specific fields
+    ugrNumber: {
+        type: String,
+        unique: true,
+        sparse: true  // allows null, but unique when provided
+    },
+    dormBlock: {
+        type: String,
+        default: null
     }
 }, { timestamps: true });
 
