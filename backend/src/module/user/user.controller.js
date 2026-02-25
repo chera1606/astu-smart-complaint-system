@@ -60,14 +60,23 @@ export const updateUser = async (req, res) => {
             if (req.body.departmentId) {
                 user.departmentId = req.body.departmentId;
             }
+            if (req.body.ugrNumber) {
+                user.ugrNumber = req.body.ugrNumber;
+            }
+            if (req.body.dormBlock) {
+                user.dormBlock = req.body.dormBlock;
+            }
 
             const updatedUser = await user.save();
             res.status(200).json({
                 _id: updatedUser._id,
+                userId: updatedUser.userId,
                 name: updatedUser.name,
                 email: updatedUser.email,
                 role: updatedUser.role,
-                departmentId: updatedUser.departmentId
+                departmentId: updatedUser.departmentId,
+                ugrNumber: updatedUser.ugrNumber,
+                dormBlock: updatedUser.dormBlock
             });
         } else {
             res.status(404).json({ message: 'User not found' });

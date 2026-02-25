@@ -1,7 +1,7 @@
 import User from '../../model/user.model.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import generateId from '../../utils/idGenerator.js';
+import generateId, { generateUgr } from '../../utils/idGenerator.js';
 
 // Generate JWT
 const generateToken = (id) => {
@@ -12,7 +12,7 @@ const generateToken = (id) => {
 
 export const registerUser = async (req, res) => {
     try {
-        const { name, email, password, role, departmentId } = req.body;
+        let { name, email, password, role, departmentId, ugrNumber, dormBlock } = req.body;
 
         if (!name || !email || !password) {
             return res.status(400).json({ message: 'Please add all fields' });
@@ -20,9 +20,26 @@ export const registerUser = async (req, res) => {
 
         // Check if user exists
         const userExists = await User.findOne({ email });
-
         if (userExists) {
             return res.status(400).json({ message: 'User already exists' });
+        }
+
+        // Automatic UGR generation if missing for students/staff
+        if (!ugrNumber && (role === 'student' || role === 'staff' || !role)) {
+            ugrNumber = await generateUgr(User);
+        }
+
+        // Validate UGR for students (and staff if generated)
+        if (ugrNumber) {
+            const ugrExists = await User.findOne({ ugrNumber });
+            if (ugrExists) {
+                // If collision on auto-gen (unlikely with new logic), try one more time or error
+                if (!req.body.ugrNumber) {
+                    ugrNumber = await generateUgr(User); // retry
+                } else {
+                    return res.status(400).json({ message: 'UGR Number already in use' });
+                }
+            }
         }
 
         // Hash password
@@ -32,18 +49,19 @@ export const registerUser = async (req, res) => {
         // Generate unique User ID
         const userId = await generateId('USR-', User);
 
-        // Create user
+        // Build user data
         const userData = {
             userId,
             name,
             email,
             password: hashedPassword,
-            role: role || 'student'
+            role: role || 'student',
+            ugrNumber
         };
 
-        if (role === 'staff' && departmentId) {
-            userData.departmentId = departmentId;
-        }
+        if (dormBlock) userData.dormBlock = dormBlock;
+        if (departmentId) userData.departmentId = departmentId;
+
 
         const user = await User.create(userData);
 
@@ -55,6 +73,8 @@ export const registerUser = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 departmentId: user.departmentId,
+                ugrNumber: user.ugrNumber,
+                dormBlock: user.dormBlock,
                 token: generateToken(user._id),
             });
         } else {
@@ -91,5 +111,12 @@ export const loginUser = async (req, res) => {
 };
 
 export const getMe = async (req, res) => {
-    res.status(200).json(req.user);
+    try {
+        const user = await User.findById(req.user._id)
+            .select('-password')
+            .populate('departmentId', 'name');
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
