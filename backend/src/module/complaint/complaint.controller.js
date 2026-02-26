@@ -1,5 +1,7 @@
 import Complaint from '../../model/complaint.model.js';
 import generateId from '../../utils/idGenerator.js';
+import { createInternalNotification } from '../notification/notification.controller.js';
+import { sendStatusUpdateEmail, sendRemarkEmail } from '../../utils/emailService.js';
 
 // @desc    Create a new complaint
 // @route   POST /api/complaints
@@ -12,7 +14,7 @@ export const createComplaint = async (req, res) => {
             return res.status(400).json({ message: 'Please provide all required fields' });
         }
 
-        const trackingId = await generateId('CMP', Complaint);
+        const trackingId = await generateId('CMP', Complaint, 'trackingId');
 
         const complaint = new Complaint({
             trackingId,
@@ -152,7 +154,7 @@ export const updateComplaintStatus = async (req, res) => {
     try {
         const { status, remark } = req.body;
 
-        const complaint = await Complaint.findById(req.params.id);
+        const complaint = await Complaint.findById(req.params.id).populate('studentId', 'email name');
 
         if (!complaint) {
             return res.status(404).json({ message: 'Complaint not found' });
@@ -175,6 +177,32 @@ export const updateComplaintStatus = async (req, res) => {
         }
 
         const updatedComplaint = await complaint.save();
+
+        // Create Notification and Send Email
+        if (status || remark) {
+            const title = status ? `Complaint Status Updated` : `New Remark on Complaint`;
+            const message = status
+                ? `Your complaint #${complaint.trackingId} status has been updated to ${status}.`
+                : `A staff member added a remark to your complaint #${complaint.trackingId}.`;
+
+            await createInternalNotification(
+                complaint.studentId._id,
+                title,
+                message,
+                `/student/my-complaints`,
+                status ? 'complaint_status' : 'remark_added'
+            );
+
+            // Send Email
+            if (complaint.studentId?.email) {
+                if (status) {
+                    await sendStatusUpdateEmail(complaint.studentId.email, complaint.trackingId, status);
+                } else if (remark) {
+                    await sendRemarkEmail(complaint.studentId.email, complaint.trackingId);
+                }
+            }
+        }
+
         res.status(200).json(updatedComplaint);
 
     } catch (error) {

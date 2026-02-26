@@ -1,11 +1,14 @@
 import express from 'express';
-import { getUsers, getUserById, deleteUser, updateUser } from './user.controller.js';
+import { getUsers, getUserById, deleteUser, updateUser, updateUserProfile } from './user.controller.js';
 import { protect, admin } from '../../middleware/auth.middleware.js';
 
 const router = express.Router();
 
 router.route('/')
     .get(protect, admin, getUsers);
+
+router.route('/profile')
+    .put(protect, updateUserProfile);
 
 router.route('/:id')
     .get(protect, admin, getUserById)

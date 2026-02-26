@@ -1,7 +1,7 @@
 import User from '../../model/user.model.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import generateId, { generateUgr } from '../../utils/idGenerator.js';
+import generateId, { generateUgr, generateStaffId, generateAdminId } from '../../utils/idGenerator.js';
 
 // Generate JWT
 const generateToken = (id) => {
@@ -24,30 +24,24 @@ export const registerUser = async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
 
-        // Automatic UGR generation if missing for students/staff
-        if (!ugrNumber && (role === 'student' || role === 'staff' || !role)) {
-            ugrNumber = await generateUgr(User);
-        }
-
-        // Validate UGR for students (and staff if generated)
-        if (ugrNumber) {
-            const ugrExists = await User.findOne({ ugrNumber });
-            if (ugrExists) {
-                // If collision on auto-gen (unlikely with new logic), try one more time or error
-                if (!req.body.ugrNumber) {
-                    ugrNumber = await generateUgr(User); // retry
-                } else {
-                    return res.status(400).json({ message: 'UGR Number already in use' });
-                }
+        // Role-specific ID generation logic and ugrNumber logic
+        let userId;
+        if (role === 'staff') {
+            userId = await generateStaffId(User);
+        } else if (role === 'admin') {
+            userId = await generateAdminId(User);
+        } else {
+            // Student: Check if ugrNumber is provided, otherwise generate it
+            if (!ugrNumber) {
+                ugrNumber = await generateUgr(User);
             }
+            // For students, their University ID (userId) IS their UGR number
+            userId = ugrNumber;
         }
 
         // Hash password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-
-        // Generate unique User ID
-        const userId = await generateId('USR-', User);
 
         // Build user data
         const userData = {
@@ -56,7 +50,7 @@ export const registerUser = async (req, res) => {
             email,
             password: hashedPassword,
             role: role || 'student',
-            ugrNumber
+            ugrNumber: role === 'staff' || role === 'admin' ? null : ugrNumber
         };
 
         if (dormBlock) userData.dormBlock = dormBlock;
@@ -87,10 +81,14 @@ export const registerUser = async (req, res) => {
 
 export const loginUser = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { userId, password } = req.body;
 
-        // Check for user email
-        const user = await User.findOne({ email });
+        if (!userId || !password) {
+            return res.status(400).json({ message: 'Please provide ID and password' });
+        }
+
+        // Check for user by userId (replaces email login)
+        const user = await User.findOne({ userId });
 
         if (user && (await bcrypt.compare(password, user.password))) {
             res.json({

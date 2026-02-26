@@ -28,7 +28,7 @@ export const createCategory = async (req, res) => {
             return res.status(400).json({ message: 'Category already exists' });
         }
 
-        const categoryId = await generateId('DEP-', Category);
+        const categoryId = await generateId('DEP-', Category, 'categoryId');
 
         const category = await Category.create({ categoryId, name });
         res.status(201).json(category);

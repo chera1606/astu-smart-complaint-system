@@ -4,22 +4,17 @@ const generateId = async (prefix, Model, fieldName = 'userId') => {
         const year = date.getFullYear();
         let formattedYear = (prefix === 'CMP') ? `-${year}` : '';
 
-        // Find the record with the highest ID for this prefix
-        const lastRecord = await Model.findOne({
-            [fieldName]: new RegExp(`^${prefix}${formattedYear}`)
-        }).sort({ [fieldName]: -1 }).limit(1);
+        const query = { [fieldName]: new RegExp(`^${prefix}${formattedYear}`) };
+        const lastRecord = await Model.findOne(query).sort({ [fieldName]: -1 }).exec();
 
         let nextNumber = 1;
         if (lastRecord && lastRecord[fieldName]) {
-            const parts = lastRecord[fieldName].split('-');
-            const lastNum = parseInt(parts[parts.length - 1]);
-            if (!isNaN(lastNum)) {
-                nextNumber = lastNum + 1;
-            }
+            const matches = lastRecord[fieldName].match(/(\d+)$/);
+            const lastNum = matches ? parseInt(matches[1]) : 0;
+            nextNumber = lastNum + 1;
         }
 
         const paddedNumber = String(nextNumber).padStart(5, '0');
-        // If prefix ends with hyphen, don't add another one
         const char = (prefix.endsWith('-') || formattedYear.endsWith('-')) ? '' : '-';
         return `${prefix}${formattedYear}${char}${paddedNumber}`;
     } catch (error) {
@@ -28,27 +23,45 @@ const generateId = async (prefix, Model, fieldName = 'userId') => {
     }
 };
 
-export const generateUgr = async (User) => {
-    const yearSuffix = new Date().getFullYear().toString().slice(-2); // e.g., 26
-    const prefix = `UGR/`;
+/**
+ * Generates IDs in the format: PREFIX/NUMBER/SUFFIX (e.g., STF/0001/18)
+ */
+export const generateFormattedId = async (prefix, Model, fieldName = 'userId', suffix = '18') => {
+    try {
+        // Regex to find matches for this prefix and suffix
+        const query = { [fieldName]: new RegExp(`^${prefix}/\\d+/${suffix}$`) };
+        const lastRecord = await Model.findOne(query).sort({ [fieldName]: -1 }).exec();
 
-    // Find highest UGR for this year
-    const lastUser = await User.findOne({
-        ugrNumber: new RegExp(`^${prefix}\\d{4}/${yearSuffix}$`)
-    }).sort({ ugrNumber: -1 }).limit(1);
+        let nextNumber = (prefix === 'UGR') ? 1001 : 1;
 
-    let nextNumber = 1001;
-    if (lastUser && lastUser.ugrNumber) {
-        const parts = lastUser.ugrNumber.split('/');
-        const lastPart = parts[1];
-        const lastNum = parseInt(lastPart);
-        if (!isNaN(lastNum)) {
-            nextNumber = lastNum + 1;
+        if (lastRecord && lastRecord[fieldName]) {
+            const parts = lastRecord[fieldName].split('/');
+            const lastPartNum = parseInt(parts[1]);
+            if (!isNaN(lastPartNum)) {
+                nextNumber = lastPartNum + 1;
+            }
         }
-    }
 
-    return `${prefix}${nextNumber}/${yearSuffix}`;
+        // Pad number if not UGR (user usually expects 4 digits for STF/ADM)
+        const displayNum = (prefix === 'UGR') ? nextNumber : String(nextNumber).padStart(4, '0');
+
+        return `${prefix}/${displayNum}/${suffix}`;
+    } catch (error) {
+        console.error(`Error generating formatted ID for ${prefix}:`, error);
+        throw new Error('Could not generate unique ID');
+    }
 };
 
+export const generateUgr = async (User) => {
+    return generateFormattedId('UGR', User, 'ugrNumber', '18');
+};
+
+export const generateStaffId = async (User) => {
+    return generateFormattedId('STF', User, 'userId', '18');
+};
+
+export const generateAdminId = async (User) => {
+    return generateFormattedId('ADM', User, 'userId', '18');
+};
 
 export default generateId;
