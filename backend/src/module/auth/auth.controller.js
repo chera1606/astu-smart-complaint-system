@@ -187,11 +187,17 @@ export const forgotPassword = async (req, res) => {
             // Audit Log
             await logAction('forgot_password_email_sent', { user, ip: req.ip, headers: req.headers });
         } catch (err) {
-            console.error(err);
-            user.resetPasswordToken = undefined;
-            user.resetPasswordExpire = undefined;
-            await user.save();
-            return res.status(500).json({ message: 'Email could not be sent' });
+            console.warn('⚠️ SMTP Error: Email could not be sent (Common if SMTP is not configured).');
+            console.log('👉 Use the Reset Link printed above in your terminal for the demo.');
+            
+            // Still return 200 so the demo can proceed with the terminal link
+            res.status(200).json({ 
+                message: 'Demo Mode: Email delivery skipped (Check server terminal for reset link)',
+                devMode: true 
+            });
+            
+            // Audit Log the issue but don't fail the request
+            await logAction('forgot_password_email_failed_but_logged', { user, ip: req.ip, error: err.message });
         }
     } catch (error) {
         res.status(500).json({ message: error.message });
