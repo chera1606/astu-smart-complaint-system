@@ -168,6 +168,12 @@ export const forgotPassword = async (req, res) => {
         console.log('Reset Link:', resetUrl);
         console.log('='.repeat(60) + '\n');
 
+        // Also save to a file for easy access if terminal is busy
+        try {
+            const fs = await import('fs');
+            fs.writeFileSync('reset_link.txt', `Email: ${user.email}\nLink: ${resetUrl}\nTime: ${new Date().toLocaleString()}`);
+        } catch (fse) {}
+
         const message = `
             <h2>You have requested a password reset</h2>
             <p>Please go to this link to reset your password:</p>
