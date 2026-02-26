@@ -56,7 +56,7 @@ const AdminLayout = () => {
         }).catch(() => { });
     }, []);
 
-    const handleLogout = () => { logout(); navigate('/'); };
+    const handleLogout = () => { logout(); navigate('/login/admin'); };
 
     const isActive = (path) => {
         if (path === '/admin') return location.pathname === '/admin';
@@ -189,9 +189,10 @@ const AdminLayout = () => {
                         <Avatar
                             component={Link} to="/admin/profile"
                             sx={{
-                                width: 36, height: 36, bgcolor: '#42a5f5',
+                                width: 36, height: 36, bgcolor: '#ffffff', color: '#1a237e',
                                 border: '2px solid rgba(255,255,255,0.2)',
                                 cursor: 'pointer',
+                                fontWeight: 'bold',
                                 transition: 'transform 0.2s',
                                 '&:hover': { transform: 'scale(1.1)' }
                             }}

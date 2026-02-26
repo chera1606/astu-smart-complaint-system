@@ -48,7 +48,7 @@ const StudentLayout = () => {
         }).catch(() => { });
     }, [location.pathname]);
 
-    const handleLogout = () => { logout(); navigate('/'); };
+    const handleLogout = () => { logout(); navigate('/login/student'); };
 
     const isActive = (path) => {
         if (path === '/student') return location.pathname === '/student';

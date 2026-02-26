@@ -39,7 +39,7 @@ const StaffLayout = () => {
         }).catch(() => { });
     }, [location.pathname]);
 
-    const handleLogout = () => { logout(); navigate('/'); };
+    const handleLogout = () => { logout(); navigate('/login/staff'); };
 
     const isActive = (path) => {
         if (path === '/staff') return location.pathname === '/staff';
@@ -111,14 +111,18 @@ const StaffLayout = () => {
             </List>
 
             <Divider />
-            <Box sx={{ px: 1, py: 1.5 }}>
+            <Box sx={{ px: 1.5, py: 2 }}>
                 <ListItemButton
                     onClick={handleLogout}
-                    sx={{ borderRadius: 2, '&:hover': { bgcolor: '#ffeaea' } }}
+                    sx={{
+                        borderRadius: 2,
+                        '&:hover': { bgcolor: '#fff5f5' },
+                        color: '#d32f2f'
+                    }}
                 >
-                    <ListItemIcon sx={{ minWidth: 40, color: 'error.main' }}><LogoutIcon /></ListItemIcon>
-                    <ListItemText primary="Sign Out" sx={{ color: 'error.main' }}
-                        primaryTypographyProps={{ fontWeight: 500, fontSize: 14 }} />
+                    <ListItemIcon sx={{ minWidth: 42, color: 'inherit' }}><LogoutIcon /></ListItemIcon>
+                    <ListItemText primary="Sign Out"
+                        primaryTypographyProps={{ fontWeight: 600, fontSize: 13.5 }} />
                 </ListItemButton>
             </Box>
         </Box>
@@ -141,34 +145,40 @@ const StaffLayout = () => {
                     >
                         <MenuIcon />
                     </IconButton>
-                    <Typography variant="h6" noWrap fontWeight="bold" sx={{ flexGrow: 1 }}>
-                        🎓 ASTU Smart Complaint System
+                    <Typography variant="h6" noWrap fontWeight="bold" sx={{ flexGrow: 1, letterSpacing: -0.5 }}>
+                        🎓 ASTU <Box component="span" sx={{ fontWeight: 300, opacity: 0.8, display: { xs: 'none', sm: 'inline' } }}> | Staff Portal</Box>
                     </Typography>
 
-                    <NotificationCenter />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <NotificationCenter />
 
-                    <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}>
-                        <Button
-                            color="inherit"
-                            onClick={handleLogout}
-                            startIcon={<LogoutIcon />}
+                        <Divider orientation="vertical" flexItem sx={{ mx: 0.5, bgcolor: 'rgba(255,255,255,0.2)' }} />
+
+                        {/* Sign Out Button in Header */}
+
+
+                        <Divider orientation="vertical" flexItem sx={{ mx: 0.5, bgcolor: 'rgba(255,255,255,0.1)' }} />
+                        <Box component={Link} to="/staff/profile" sx={{
+                            display: { xs: 'none', sm: 'block' },
+                            textAlign: 'right', mr: 1,
+                            textDecoration: 'none', color: 'inherit'
+                        }}>
+                            <Typography variant="body2" sx={{ fontWeight: 700, lineHeight: 1 }}>{user?.name}</Typography>
+                            <Typography variant="caption" sx={{ opacity: 0.7 }}>Staff Member</Typography>
+                        </Box>
+                        <Avatar
+                            component={Link} to="/staff/profile"
                             sx={{
-                                textTransform: 'none',
-                                fontWeight: 600,
-                                borderRadius: 2,
-                                px: 2,
-                                '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }
+                                width: 36, height: 36, bgcolor: '#ffffff', color: '#1565c0',
+                                border: '2px solid rgba(255,255,255,0.2)',
+                                cursor: 'pointer',
+                                fontWeight: 'bold',
+                                transition: 'transform 0.2s',
+                                '&:hover': { transform: 'scale(1.1)' }
                             }}
                         >
-                            Sign Out
-                        </Button>
-                    </Box>
-
-                    <Box sx={{
-                        bgcolor: 'rgba(255,255,255,0.15)', px: 2, py: 0.5,
-                        borderRadius: 10, display: { xs: 'none', sm: 'block' }, ml: 1
-                    }}>
-                        <Typography variant="caption" fontWeight="bold">Staff Portal</Typography>
+                            {user?.name?.charAt(0)}
+                        </Avatar>
                     </Box>
                 </Toolbar>
             </AppBar>
@@ -179,9 +189,10 @@ const StaffLayout = () => {
                 sx={{
                     width: DRAWER_WIDTH,
                     display: { xs: 'none', md: 'block' },
-                    '& .MuiDrawer-paper': { width: DRAWER_WIDTH, boxSizing: 'border-box', mt: '64px', borderRight: '1px solid #e8edf2' },
+                    '& .MuiDrawer-paper': { width: DRAWER_WIDTH, boxSizing: 'border-box', borderRight: '1px solid #e8edf2' },
                 }}
             >
+                <Toolbar /> {/* Spacer */}
                 {drawer}
             </Drawer>
 
