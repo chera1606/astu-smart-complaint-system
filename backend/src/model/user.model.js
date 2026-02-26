@@ -39,7 +39,9 @@ const userSchema = new mongoose.Schema({
     dormBlock: {
         type: String,
         default: null
-    }
+    },
+    resetPasswordToken: String,
+    resetPasswordExpire: Date
 }, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);

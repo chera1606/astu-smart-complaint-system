@@ -8,4 +8,7 @@ router.post('/register', protect, admin, registerUser);
 router.post('/login', loginUser);
 router.get('/me', protect, getMe);
 
+router.post('/forgot-password', forgotPassword);
+router.put('/reset-password/:resetToken', resetPassword);
+
 export default router;
