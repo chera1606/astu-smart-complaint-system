@@ -161,6 +161,12 @@ export const forgotPassword = async (req, res) => {
         // Create reset url
         const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password/${resetToken}`;
 
+        // DEV MODE: Print reset link to console
+        console.log('--------------------------------------------');
+        console.log('PASSWORD RESET LINK (DEV MODE):');
+        console.log(resetUrl);
+        console.log('--------------------------------------------');
+
         const message = `
             <h2>You have requested a password reset</h2>
             <p>Please go to this link to reset your password:</p>
