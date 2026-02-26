@@ -2,6 +2,7 @@ import User from '../../model/user.model.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import generateId, { generateUgr, generateStaffId, generateAdminId } from '../../utils/idGenerator.js';
+import { logAction } from '../../middleware/auditLogger.middleware.js';
 
 // Generate JWT
 const generateToken = (id) => {
@@ -60,6 +61,7 @@ export const registerUser = async (req, res) => {
         const user = await User.create(userData);
 
         if (user) {
+            const token = generateToken(user._id);
             res.status(201).json({
                 _id: user.id,
                 userId: user.userId,
@@ -69,8 +71,11 @@ export const registerUser = async (req, res) => {
                 departmentId: user.departmentId,
                 ugrNumber: user.ugrNumber,
                 dormBlock: user.dormBlock,
-                token: generateToken(user._id),
+                token,
             });
+
+            // Audit Log
+            await logAction('login_success', { user, ip: req.ip, headers: req.headers }, { method: 'registration' });
         } else {
             res.status(400).json({ message: 'Invalid user data' });
         }
@@ -91,6 +96,7 @@ export const loginUser = async (req, res) => {
         const user = await User.findOne({ userId });
 
         if (user && (await bcrypt.compare(password, user.password))) {
+            const token = generateToken(user._id);
             res.json({
                 _id: user.id,
                 userId: user.userId,
@@ -98,9 +104,14 @@ export const loginUser = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 departmentId: user.departmentId,
-                token: generateToken(user._id),
+                token,
             });
+
+            // Audit Log
+            await logAction('login_success', { user, ip: req.ip, headers: req.headers });
         } else {
+            // Audit Log Failure (no user object yet, so we pass a mock req-like object to logAction)
+            await logAction('login_failure', { ip: req.ip, headers: req.headers }, { attemptedUserId: userId });
             res.status(401).json({ message: 'Invalid credentials' });
         }
     } catch (error) {

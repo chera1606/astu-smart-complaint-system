@@ -3,6 +3,7 @@ import User from '../../model/user.model.js';
 import generateId from '../../utils/idGenerator.js';
 import { createInternalNotification } from '../notification/notification.controller.js';
 import { sendStatusUpdateEmail, sendRemarkEmail } from '../../utils/emailService.js';
+import { logAction } from '../../middleware/auditLogger.middleware.js';
 
 // @desc    Create a new complaint
 // @route   POST /api/complaints
@@ -54,6 +55,10 @@ export const createComplaint = async (req, res) => {
         await Promise.all(notificationPromises);
 
         res.status(201).json(createdComplaint);
+
+        // Audit Log
+        await logAction('create_complaint', req, { complaintId: createdComplaint._id, trackingId });
+
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -158,10 +163,12 @@ export const getComplaintById = async (req, res) => {
 
         // Authorization checks
         if (req.user.role === 'student' && complaint.studentId._id.toString() !== req.user._id.toString()) {
+            await logAction('unauthorized_access_attempt', req, { complaintId: req.params.id, reason: 'student_access_denied' });
             return res.status(403).json({ message: 'Not authorized to view this complaint' });
         }
 
         if (req.user.role === 'staff' && complaint.departmentId._id.toString() !== req.user.departmentId.toString()) {
+            await logAction('unauthorized_access_attempt', req, { complaintId: req.params.id, reason: 'staff_department_mismatch' });
             return res.status(403).json({ message: 'Not authorized to view this complaint' });
         }
 
@@ -186,6 +193,7 @@ export const updateComplaintStatus = async (req, res) => {
 
         // Authorization checks
         if (req.user.role === 'staff' && complaint.departmentId.toString() !== req.user.departmentId.toString()) {
+            await logAction('unauthorized_access_attempt', req, { complaintId: req.params.id, action: 'update_status_denied' });
             return res.status(403).json({ message: 'Not authorized to update this complaint' });
         }
 
@@ -249,6 +257,10 @@ export const updateComplaintStatus = async (req, res) => {
         }
 
         res.status(200).json(updatedComplaint);
+
+        // Audit Log
+        if (status) await logAction('update_complaint_status', req, { complaintId: updatedComplaint._id, newStatus: status });
+        if (remark) await logAction('add_remark', req, { complaintId: updatedComplaint._id });
 
     } catch (error) {
         res.status(500).json({ message: error.message });
