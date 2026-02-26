@@ -1,14 +1,13 @@
 import React, { useState, useContext, useEffect } from 'react';
 import {
     Box, Drawer, List, ListItem, ListItemIcon, ListItemText, Typography, AppBar, Toolbar,
-    IconButton, CssBaseline, Divider, Avatar, Badge, Tooltip
+    IconButton, CssBaseline, Divider, Avatar, Badge, Tooltip, ListItemButton, Button
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MenuIcon from '@mui/icons-material/Menu';
-import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 
@@ -16,6 +15,7 @@ import StaffOverview from './StaffOverview';
 import AssignedComplaints from './AssignedComplaints';
 import UpdateComplaint from './UpdateComplaint';
 import StaffProfile from './StaffProfile';
+import NotificationCenter from '../../components/NotificationCenter';
 import api from '../../utils/api';
 
 const DRAWER_WIDTH = 250;
@@ -37,7 +37,7 @@ const StaffLayout = () => {
         api.get('/complaints/department').then(r => {
             setPendingCount(r.data.filter(c => c.status === 'pending').length);
         }).catch(() => { });
-    }, []);
+    }, [location.pathname]);
 
     const handleLogout = () => { logout(); navigate('/'); };
 
@@ -75,47 +75,51 @@ const StaffLayout = () => {
             {/* Navigation */}
             <List sx={{ px: 1, pt: 2, flexGrow: 1 }}>
                 {navItems.map((item) => (
-                    <ListItem
-                        button
-                        key={item.label}
-                        component={Link}
-                        to={item.path}
-                        onClick={() => setMobileOpen(false)}
-                        sx={{
-                            borderRadius: 2, mb: 0.5, py: 1.2,
-                            bgcolor: isActive(item.path) ? '#e3f2fd' : 'transparent',
-                            color: isActive(item.path) ? '#1565c0' : '#555',
-                            '& .MuiListItemIcon-root': { color: isActive(item.path) ? '#1565c0' : '#888' },
-                            '&:hover': { bgcolor: isActive(item.path) ? '#e3f2fd' : '#f5f5f5' },
-                            transition: 'all 0.2s',
-                        }}
-                    >
-                        <ListItemIcon sx={{ minWidth: 40 }}>
-                            {item.label === 'Assigned Complaints' ? (
-                                <Badge badgeContent={pendingCount || 0} color="error" max={99}>
-                                    {item.icon}
-                                </Badge>
-                            ) : item.icon}
-                        </ListItemIcon>
-                        <ListItemText
-                            primary={item.label}
-                            primaryTypographyProps={{ fontWeight: isActive(item.path) ? 700 : 400, fontSize: 14 }}
-                        />
+                    <ListItem key={item.label} disablePadding sx={{ mb: 0.5 }}>
+                        <ListItemButton
+                            component={Link}
+                            to={item.path}
+                            onClick={() => setMobileOpen(false)}
+                            selected={isActive(item.path)}
+                            sx={{
+                                borderRadius: 2, py: 1.2,
+                                '&.Mui-selected': {
+                                    bgcolor: '#e3f2fd',
+                                    color: '#1565c0',
+                                    '& .MuiListItemIcon-root': { color: '#1565c0' },
+                                    '&:hover': { bgcolor: '#bbdefb' }
+                                },
+                                color: '#555',
+                                '& .MuiListItemIcon-root': { color: '#888' },
+                                transition: 'all 0.2s',
+                            }}
+                        >
+                            <ListItemIcon sx={{ minWidth: 40 }}>
+                                {item.label === 'Assigned Complaints' ? (
+                                    <Badge badgeContent={pendingCount || 0} color="error" max={99}>
+                                        {item.icon}
+                                    </Badge>
+                                ) : item.icon}
+                            </ListItemIcon>
+                            <ListItemText
+                                primary={item.label}
+                                primaryTypographyProps={{ fontWeight: isActive(item.path) ? 700 : 400, fontSize: 14 }}
+                            />
+                        </ListItemButton>
                     </ListItem>
                 ))}
             </List>
 
             <Divider />
             <Box sx={{ px: 1, py: 1.5 }}>
-                <ListItem
-                    button
+                <ListItemButton
                     onClick={handleLogout}
                     sx={{ borderRadius: 2, '&:hover': { bgcolor: '#ffeaea' } }}
                 >
                     <ListItemIcon sx={{ minWidth: 40, color: 'error.main' }}><LogoutIcon /></ListItemIcon>
-                    <ListItemText primary="Logout" sx={{ color: 'error.main' }}
+                    <ListItemText primary="Sign Out" sx={{ color: 'error.main' }}
                         primaryTypographyProps={{ fontWeight: 500, fontSize: 14 }} />
-                </ListItem>
+                </ListItemButton>
             </Box>
         </Box>
     );
@@ -140,16 +144,29 @@ const StaffLayout = () => {
                     <Typography variant="h6" noWrap fontWeight="bold" sx={{ flexGrow: 1 }}>
                         🎓 ASTU Smart Complaint System
                     </Typography>
-                    <Tooltip title="Pending complaints">
-                        <IconButton color="inherit" sx={{ mr: 1 }}>
-                            <Badge badgeContent={pendingCount} color="error">
-                                <NotificationsNoneIcon />
-                            </Badge>
-                        </IconButton>
-                    </Tooltip>
+
+                    <NotificationCenter />
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}>
+                        <Button
+                            color="inherit"
+                            onClick={handleLogout}
+                            startIcon={<LogoutIcon />}
+                            sx={{
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                borderRadius: 2,
+                                px: 2,
+                                '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }
+                            }}
+                        >
+                            Sign Out
+                        </Button>
+                    </Box>
+
                     <Box sx={{
                         bgcolor: 'rgba(255,255,255,0.15)', px: 2, py: 0.5,
-                        borderRadius: 10, display: { xs: 'none', sm: 'block' }
+                        borderRadius: 10, display: { xs: 'none', sm: 'block' }, ml: 1
                     }}>
                         <Typography variant="caption" fontWeight="bold">Staff Portal</Typography>
                     </Box>

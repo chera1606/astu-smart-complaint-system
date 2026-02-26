@@ -164,13 +164,12 @@ const RegisterUser = () => {
                                     <Grid item xs={12}>
                                         <TextField
                                             fullWidth
-                                            required
                                             label="University Registration Number (UGR)"
                                             name="ugrNumber"
-                                            placeholder="e.g., UGR/1234/14"
+                                            placeholder="Leave blank to generate automatically"
                                             value={formData.ugrNumber}
                                             onChange={handleChange}
-                                            helperText="Official Student ID as primary identifier"
+                                            helperText="Optional: If left blank, it will be generated as UGR/####/18"
                                             InputProps={{
                                                 startAdornment: <InputAdornment position="start"><BadgeIcon sx={{ color: '#94a3b8' }} /></InputAdornment>,
                                                 sx: { borderRadius: 2 }
@@ -249,7 +248,7 @@ const RegisterUser = () => {
 
                             <Box sx={{ mb: 3 }}>
                                 <Typography variant="subtitle2" fontWeight={700} color="#3b82f6">UGR Requirement</Typography>
-                                <Typography variant="body2" color="text.secondary">For students, the UGR number is mandatory and serves as the official identifier for tracking complaints.</Typography>
+                                <Typography variant="body2" color="text.secondary">For students, the UGR number is the official identifier. If you leave it blank, the system will automatically assign one (e.g., UGR/1001/18).</Typography>
                             </Box>
 
                             <Box sx={{ mb: 3 }}>

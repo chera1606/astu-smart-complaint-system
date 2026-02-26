@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import {
     Box, Drawer, List, ListItem, ListItemIcon, ListItemText, Typography, AppBar, Toolbar,
-    IconButton, CssBaseline, Divider, Avatar, Badge, Tooltip, Menu, MenuItem
+    IconButton, CssBaseline, Divider, Avatar, Badge, Tooltip, Menu, MenuItem, ListItemButton
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
@@ -26,6 +26,7 @@ import Analytics from './Analytics';
 import KnowledgeBase from './KnowledgeBase';
 import Settings from './Settings';
 import AdminProfile from './AdminProfile';
+import NotificationCenter from '../../components/NotificationCenter';
 import api from '../../utils/api';
 
 const DRAWER_WIDTH = 260;
@@ -95,44 +96,48 @@ const AdminLayout = () => {
             {/* Navigation */}
             <List sx={{ px: 1.5, pt: 2, flexGrow: 1 }}>
                 {navItems.map((item) => (
-                    <ListItem
-                        button
-                        key={item.label}
-                        component={Link}
-                        to={item.path}
-                        onClick={() => setMobileOpen(false)}
-                        sx={{
-                            borderRadius: 2, mb: 0.8, py: 1.3,
-                            bgcolor: isActive(item.path) ? '#e3f2fd' : 'transparent',
-                            color: isActive(item.path) ? '#1a237e' : '#546e7a',
-                            '& .MuiListItemIcon-root': { color: isActive(item.path) ? '#1a237e' : '#90a4ae' },
-                            '&:hover': { bgcolor: isActive(item.path) ? '#e3f2fd' : '#f8f9fa' },
-                            transition: 'all 0.2s',
-                        }}
-                    >
-                        <ListItemIcon sx={{ minWidth: 42 }}>
-                            {item.label === 'All Complaints' ? (
-                                <Badge badgeContent={pendingCount || 0} color="error" max={99}>
-                                    {item.icon}
-                                </Badge>
-                            ) : item.icon}
-                        </ListItemIcon>
-                        <ListItemText
-                            primary={item.label}
-                            primaryTypographyProps={{
-                                fontWeight: isActive(item.path) ? 700 : 500,
-                                fontSize: 13.5,
-                                letterSpacing: 0.2
+                    <ListItem key={item.label} disablePadding sx={{ mb: 0.8 }}>
+                        <ListItemButton
+                            component={Link}
+                            to={item.path}
+                            onClick={() => setMobileOpen(false)}
+                            selected={isActive(item.path)}
+                            sx={{
+                                borderRadius: 2, py: 1.3,
+                                '&.Mui-selected': {
+                                    bgcolor: '#e3f2fd',
+                                    color: '#1a237e',
+                                    '& .MuiListItemIcon-root': { color: '#1a237e' },
+                                    '&:hover': { bgcolor: '#bbdefb' }
+                                },
+                                color: '#546e7a',
+                                '& .MuiListItemIcon-root': { color: '#90a4ae' },
+                                transition: 'all 0.2s',
                             }}
-                        />
+                        >
+                            <ListItemIcon sx={{ minWidth: 42 }}>
+                                {item.label === 'All Complaints' ? (
+                                    <Badge badgeContent={pendingCount || 0} color="error" max={99}>
+                                        {item.icon}
+                                    </Badge>
+                                ) : item.icon}
+                            </ListItemIcon>
+                            <ListItemText
+                                primary={item.label}
+                                primaryTypographyProps={{
+                                    fontWeight: isActive(item.path) ? 700 : 500,
+                                    fontSize: 13.5,
+                                    letterSpacing: 0.2
+                                }}
+                            />
+                        </ListItemButton>
                     </ListItem>
                 ))}
             </List>
 
             <Divider />
             <Box sx={{ px: 1.5, py: 2 }}>
-                <ListItem
-                    button
+                <ListItemButton
                     onClick={handleLogout}
                     sx={{
                         borderRadius: 2,
@@ -143,7 +148,7 @@ const AdminLayout = () => {
                     <ListItemIcon sx={{ minWidth: 42, color: 'inherit' }}><LogoutIcon /></ListItemIcon>
                     <ListItemText primary="Sign Out"
                         primaryTypographyProps={{ fontWeight: 600, fontSize: 13.5 }} />
-                </ListItem>
+                </ListItemButton>
             </Box>
         </Box>
     );
@@ -170,13 +175,8 @@ const AdminLayout = () => {
                     </Typography>
 
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Tooltip title="Pending complaints">
-                            <IconButton color="inherit" onClick={() => navigate('/admin/complaints')}>
-                                <Badge badgeContent={pendingCount} color="error">
-                                    <NotificationsNoneIcon />
-                                </Badge>
-                            </IconButton>
-                        </Tooltip>
+                        <NotificationCenter />
+
                         <Divider orientation="vertical" flexItem sx={{ mx: 1, bgcolor: 'rgba(255,255,255,0.1)' }} />
                         <Box component={Link} to="/admin/profile" sx={{
                             display: { xs: 'none', sm: 'block' },
