@@ -53,7 +53,9 @@ const KnowledgeBase = () => {
             setFile(null);
             fetchDocs();
         } catch (err) {
-            setError(err.response?.data?.message || 'Upload failed');
+            const msg = err.response?.data?.error || err.response?.data?.message || 'Upload failed';
+            setError(msg);
+            console.error("Upload Error:", err.response?.data);
         } finally {
             setUploading(false);
         }

@@ -32,14 +32,13 @@ ${context}
 
 ANSWER:`;
 
-        const result = await genAI.models.generateContent({
-            model: "gemini-1.5-flash",
-            contents: prompt
-        });
+        const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" }, { apiVersion: 'v1beta' });
+        const result = await model.generateContent(prompt);
+        const responseText = result.response.text();
 
         return {
             success: true,
-            finalResponse: result.text
+            finalResponse: responseText
         };
 
     } catch (err) {

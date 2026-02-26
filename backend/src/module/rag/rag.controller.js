@@ -20,6 +20,7 @@ export const ragController = {
 
             // 3. Handle Service Result
             if (!result.success) {
+                console.error("RAG Service Failure:", result.error);
                 return res.status(500).json({
                     success: false,
                     error: result.error

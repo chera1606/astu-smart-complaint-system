@@ -7,11 +7,8 @@ export const embedGeneratedQuery = async (query) => {
     try {
         if (!query) return { success: false, error: "Query is required" };
 
-        const result = await genAI.models.embedContent({
-            model: "gemini-embedding-001",
-            contents: query,
-            taskType: "RETRIEVAL_QUERY",
-        });
+        const model = genAI.getGenerativeModel({ model: "gemini-embedding-001" }, { apiVersion: 'v1beta' });
+        const result = await model.embedContent(query);
 
         if (!result.embedding?.values) {
             return { success: false, error: "Empty embedding generated" };
@@ -24,6 +21,6 @@ export const embedGeneratedQuery = async (query) => {
 
     } catch (error) {
         console.error("Query embedding error:", error);
-        return { success: false, error: error?.message || "Embedding failed" };
+        return { success: false, error: "Query embedding failed: " + (error?.message || "") };
     }
 };

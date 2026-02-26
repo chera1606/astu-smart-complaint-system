@@ -68,7 +68,7 @@ export const uploadDataService = {
             };
 
         } catch (error) {
-            console.error("Upload Service Error:", error);
+            console.error("Upload Service Core Failure:", error);
             return {
                 success: false,
                 error: error.message || "An unexpected error occurred during document processing"
