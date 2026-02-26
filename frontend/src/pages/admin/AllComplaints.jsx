@@ -276,9 +276,60 @@ const AllComplaints = () => {
                                     <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <ListAltIcon fontSize="small" /> COMPLAINT DESCRIPTION
                                     </Typography>
-                                    <Typography variant="body1" sx={{ mb: 4, p: 2, bgcolor: '#f8fafc', borderRadius: 2, whiteSpace: 'pre-wrap' }}>
+                                    <Typography variant="body1" sx={{ mb: 3, p: 2, bgcolor: '#f8fafc', borderRadius: 2, whiteSpace: 'pre-wrap' }}>
                                         {selectedComplaint.description}
                                     </Typography>
+
+                                    {/* Attachments */}
+                                    {selectedComplaint.attachments?.length > 0 && (
+                                        <Box sx={{ mb: 3 }}>
+                                            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5, fontWeight: 700, fontSize: 12, letterSpacing: 0.5 }}>
+                                                📎 ATTACHMENTS ({selectedComplaint.attachments.length})
+                                            </Typography>
+                                            <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+                                                {selectedComplaint.attachments.map((a, i) => {
+                                                    const fileUrl = a.startsWith('http') ? a : `http://localhost:5000${a}`;
+                                                    const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(a);
+                                                    return isImage ? (
+                                                        <Box
+                                                            key={i}
+                                                            component="a"
+                                                            href={fileUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            sx={{
+                                                                display: 'block',
+                                                                width: 120, height: 90,
+                                                                borderRadius: 2,
+                                                                overflow: 'hidden',
+                                                                border: '2px solid #e2e8f0',
+                                                                transition: 'border-color 0.2s',
+                                                                '&:hover': { borderColor: '#6366f1' }
+                                                            }}
+                                                        >
+                                                            <Box
+                                                                component="img"
+                                                                src={fileUrl}
+                                                                alt={`Attachment ${i + 1}`}
+                                                                sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                            />
+                                                        </Box>
+                                                    ) : (
+                                                        <Button
+                                                            key={i}
+                                                            size="small"
+                                                            variant="outlined"
+                                                            href={fileUrl}
+                                                            target="_blank"
+                                                            sx={{ borderRadius: 2, textTransform: 'none' }}
+                                                        >
+                                                            📄 File {i + 1}
+                                                        </Button>
+                                                    );
+                                                })}
+                                            </Box>
+                                        </Box>
+                                    )}
 
                                     <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <ReportProblemIcon fontSize="small" /> REMARKS HISTORY

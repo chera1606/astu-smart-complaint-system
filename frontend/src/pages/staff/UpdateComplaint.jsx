@@ -141,13 +141,50 @@ const UpdateComplaint = () => {
 
                         {complaint.attachments?.length > 0 && (
                             <Box sx={{ mt: 2 }}>
-                                <Typography variant="caption" color="text.secondary" fontWeight={600}>ATTACHMENTS</Typography>
-                                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 0.5 }}>
-                                    {complaint.attachments.map((a, i) => (
-                                        <Button key={i} size="small" variant="outlined" href={a} target="_blank" sx={{ borderRadius: 2, textTransform: 'none' }}>
-                                            File {i + 1}
-                                        </Button>
-                                    ))}
+                                <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                                    📎 Attachments ({complaint.attachments.length})
+                                </Typography>
+                                <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mt: 1 }}>
+                                    {complaint.attachments.map((a, i) => {
+                                        const fileUrl = a.startsWith('http') ? a : `http://localhost:5000${a}`;
+                                        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(a);
+                                        return isImage ? (
+                                            <Box
+                                                key={i}
+                                                component="a"
+                                                href={fileUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                sx={{
+                                                    display: 'block',
+                                                    width: 110, height: 85,
+                                                    borderRadius: 2,
+                                                    overflow: 'hidden',
+                                                    border: '2px solid #e2e8f0',
+                                                    transition: 'border-color 0.2s, transform 0.2s',
+                                                    '&:hover': { borderColor: '#1565c0', transform: 'scale(1.03)' }
+                                                }}
+                                            >
+                                                <Box
+                                                    component="img"
+                                                    src={fileUrl}
+                                                    alt={`Attachment ${i + 1}`}
+                                                    sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                />
+                                            </Box>
+                                        ) : (
+                                            <Button
+                                                key={i}
+                                                size="small"
+                                                variant="outlined"
+                                                href={fileUrl}
+                                                target="_blank"
+                                                sx={{ borderRadius: 2, textTransform: 'none' }}
+                                            >
+                                                📄 File {i + 1}
+                                            </Button>
+                                        );
+                                    })}
                                 </Box>
                             </Box>
                         )}

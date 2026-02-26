@@ -1,4 +1,5 @@
 import Complaint from '../../model/complaint.model.js';
+import User from '../../model/user.model.js';
 import generateId from '../../utils/idGenerator.js';
 import { createInternalNotification } from '../notification/notification.controller.js';
 import { sendStatusUpdateEmail, sendRemarkEmail } from '../../utils/emailService.js';
@@ -25,10 +26,33 @@ export const createComplaint = async (req, res) => {
             category,
             priority: priority || 'Medium',
             location,
-            attachments: req.file ? [req.file.path] : [] // Assuming single file upload for now, can be updated for multiple
+            attachments: req.file ? [`/uploads/${req.file.filename}`] : []
         });
 
         const createdComplaint = await complaint.save();
+
+        // Notify Admins and Department Staff
+        const admins = await User.find({ role: 'admin' });
+        const staff = await User.find({ role: 'staff', departmentId });
+
+        const notificationPromises = [
+            ...admins.map(admin => createInternalNotification(
+                admin._id,
+                'New Complaint Submitted',
+                `A new complaint #${trackingId} has been submitted in ${category}.`,
+                `/admin/complaints`,
+                'new_complaint'
+            )),
+            ...staff.map(s => createInternalNotification(
+                s._id,
+                'New Assigned Complaint',
+                `A new complaint #${trackingId} has been assigned to your department.`,
+                `/staff/complaints`,
+                'new_complaint'
+            ))
+        ];
+        await Promise.all(notificationPromises);
+
         res.status(201).json(createdComplaint);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -200,6 +224,27 @@ export const updateComplaintStatus = async (req, res) => {
                 } else if (remark) {
                     await sendRemarkEmail(complaint.studentId.email, complaint.trackingId);
                 }
+            }
+
+            // Notify Admin if updated by Staff, or Staff if updated by Admin
+            if (req.user.role === 'staff') {
+                const admins = await User.find({ role: 'admin' });
+                await Promise.all(admins.map(admin => createInternalNotification(
+                    admin._id,
+                    `Complaint ${status ? 'Updated' : 'Remarked'} by Staff`,
+                    `Staff member ${req.user.name} ${status ? `updated status to ${status}` : 'added a remark'} for #${complaint.trackingId}.`,
+                    `/admin/complaints`,
+                    'complaint_update'
+                )));
+            } else if (req.user.role === 'admin') {
+                const staff = await User.find({ role: 'staff', departmentId: complaint.departmentId });
+                await Promise.all(staff.map(s => createInternalNotification(
+                    s._id,
+                    `Complaint ${status ? 'Updated' : 'Remarked'} by Admin`,
+                    `Administrator ${req.user.name} ${status ? `updated status to ${status}` : 'added a remark'} for #${complaint.trackingId}.`,
+                    `/staff/complaints`,
+                    'complaint_update'
+                )));
             }
         }
 
