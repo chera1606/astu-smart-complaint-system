@@ -161,11 +161,12 @@ export const forgotPassword = async (req, res) => {
         // Create reset url
         const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password/${resetToken}`;
 
-        // DEV MODE: Print reset link to console
-        console.log('--------------------------------------------');
-        console.log('PASSWORD RESET LINK (DEV MODE):');
-        console.log(resetUrl);
-        console.log('--------------------------------------------');
+        // DEV MODE: Print reset link to console for demo purposes
+        console.log('\n' + '='.repeat(60));
+        console.log('🚀 FORGOT PASSWORD DEBUG INFO (DEV MODE)');
+        console.log('User Email:', user.email);
+        console.log('Reset Link:', resetUrl);
+        console.log('='.repeat(60) + '\n');
 
         const message = `
             <h2>You have requested a password reset</h2>
