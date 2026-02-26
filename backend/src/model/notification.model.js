@@ -24,7 +24,7 @@ const notificationSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['complaint_status', 'remark_added', 'system'],
+        enum: ['complaint_status', 'remark_added', 'new_complaint', 'complaint_update', 'system'],
         default: 'system'
     },
     createdAt: {
