@@ -8,18 +8,29 @@ import AuditLog from "../model/auditLog.model.js";
  */
 export const logAction = async (action, req, metadata = {}) => {
     try {
+        if (!req) return;
+        
         const userId = req.user ? req.user._id : null;
-        const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        
+        // Robust IP extraction
+        const ipAddress = 
+            req.ip || 
+            (req.headers && req.headers['x-forwarded-for']) || 
+            (req.connection && req.connection.remoteAddress) || 
+            (req.socket && req.socket.remoteAddress) ||
+            '127.0.0.1';
+
+        const userAgent = req.headers ? req.headers['user-agent'] : 'Unknown';
 
         await AuditLog.create({
             userId,
             action,
             ipAddress,
-            userAgent: req.headers['user-agent'],
+            userAgent,
             metadata
         });
     } catch (error) {
-        console.error("Audit Logging Error:", error);
+        console.error("DEBUG: Audit Logging Error:", error.message);
     }
 };
 

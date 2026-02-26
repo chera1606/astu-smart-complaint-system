@@ -4,7 +4,6 @@ import dotenv from "dotenv"
 import path from "path";
 import { fileURLToPath } from "url";
 import helmet from "helmet";
-import mongoSanitize from "express-mongo-sanitize";
 import hpp from "hpp";
 import { rateLimit } from "express-rate-limit";
 
@@ -21,42 +20,40 @@ const PORT = process.env.PORT || 5000
 const app = express()
 
 // 1. GLOBAL SECURITY MIDDLEWARES
-app.use(helmet()); // Set secure HTTP headers
-app.use(express.json({ limit: '10kb' })); // Body parser, with limit to prevent DOS
-app.use(mongoSanitize()); // Data sanitization against NoSQL query injection
-app.use(hpp()); // Prevent HTTP Parameter Pollution
+app.use(helmet()); 
+app.use(express.json({ limit: '10kb' })); 
+// app.use(mongoSanitize()); // Disabled due to Express 5 incompatibility
+app.use(hpp());
 
 // 2. CORS CONFIGURATION
 app.use(cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173", // Restrict to your frontend
-    credentials: true
+    origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://127.0.0.1:5173"],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
 }))
 
 // 3. RATE LIMITING
 const globalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per window
+    windowMs: 15 * 60 * 1000, 
+    max: 100, 
     message: "Too many requests from this IP, please try again after 15 minutes",
     standardHeaders: true,
     legacyHeaders: false,
 })
 
 const authLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hour
-    max: 20, // Limit each IP to 20 login/register attempts per hour
+    windowMs: 60 * 60 * 1000, 
+    max: 20, // Restored to 20 per hour
     message: "Too many authentication attempts, please try again after an hour",
     standardHeaders: true,
     legacyHeaders: false,
 })
 
-// Apply global rate limiter
 app.use("/api", globalLimiter);
+app.use("/api/auth/login", authLimiter);
+app.use("/api/auth/register", authLimiter);
 
-// Apply strict limiter to auth routes (assuming they are under /api/users)
-app.use("/api/users/login", authLimiter);
-app.use("/api/users/register", authLimiter);
-
-// Serve uploaded files as static assets
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 app.get("/", (req, res) => {

@@ -92,7 +92,7 @@ export const loginUser = async (req, res) => {
             return res.status(400).json({ message: 'Please provide ID and password' });
         }
 
-        // Check for user by userId (replaces email login)
+        // Check for user by userId
         const user = await User.findOne({ userId });
 
         if (user && (await bcrypt.compare(password, user.password))) {
@@ -110,7 +110,7 @@ export const loginUser = async (req, res) => {
             // Audit Log
             await logAction('login_success', { user, ip: req.ip, headers: req.headers });
         } else {
-            // Audit Log Failure (no user object yet, so we pass a mock req-like object to logAction)
+            // Audit Log Failure
             await logAction('login_failure', { ip: req.ip, headers: req.headers }, { attemptedUserId: userId });
             res.status(401).json({ message: 'Invalid credentials' });
         }
