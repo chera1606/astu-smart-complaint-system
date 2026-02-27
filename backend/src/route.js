@@ -6,6 +6,7 @@ import userRoute from "./module/user/user.route.js"
 import categoryRoute from "./module/category/category.route.js"
 import complaintRoute from "./module/complaint/complaint.route.js"
 import notificationRoute from "./module/notification/notification.route.js"
+import auditLogRoute from "./module/auditLog/auditLog.route.js"
 
 const router = Router()
 
@@ -16,5 +17,6 @@ router.use("/users", userRoute)
 router.use("/categories", categoryRoute)
 router.use("/complaints", complaintRoute)
 router.use("/notifications", notificationRoute)
+router.use("/audit-logs", auditLogRoute)
 
 export default router

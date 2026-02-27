@@ -6,7 +6,8 @@ import {
     getAllComplaints,
     getComplaintById,
     updateComplaintStatus,
-    getAnalytics
+    getAnalytics,
+    deleteComplaint
 } from './complaint.controller.js';
 import { protect, admin, staff } from '../../middleware/auth.middleware.js';
 import upload from '../../middleware/upload.middleware.js';
@@ -36,6 +37,7 @@ router.route('/analytics')
 
 // General Private Routes
 router.route('/:id')
-    .get(protect, getComplaintById);
+    .get(protect, getComplaintById)
+    .delete(protect, admin, deleteComplaint);
 
 export default router;

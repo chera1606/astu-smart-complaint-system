@@ -3,6 +3,7 @@ import {
     Box, Typography, Paper, Grid, Avatar, Button, TextField,
     Divider, Chip, Stack, Alert, IconButton, InputAdornment, useTheme
 } from '@mui/material';
+import { Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import PersonIcon from '@mui/icons-material/Person';
 import SecurityIcon from '@mui/icons-material/Security';
@@ -210,7 +211,7 @@ const AdminProfile = () => {
                                 <ActivityItem time="2 hours ago" action="Updated department: Engineering" />
                                 <ActivityItem time="5 hours ago" action="Resolved complaint: #CMP-2026-0004" />
                                 <ActivityItem time="Yesterday" action="Registered new staff member: Dr. Abebe" />
-                                <Button fullWidth variant="text" sx={{ textTransform: 'none', fontWeight: 600, color: '#1a237e' }}>View Audit Logs</Button>
+                                <Button component={Link} to="/admin/audit-logs" fullWidth variant="text" sx={{ textTransform: 'none', fontWeight: 600, color: '#1a237e' }}>View Audit Logs</Button>
                             </Stack>
                         </Paper>
                     </Stack>

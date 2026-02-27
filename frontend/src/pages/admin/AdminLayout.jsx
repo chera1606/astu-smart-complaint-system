@@ -13,9 +13,11 @@ import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MenuIcon from '@mui/icons-material/Menu';
-import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
+import SecurityIcon from '@mui/icons-material/Security';
+import { Brightness4, Brightness7 } from '@mui/icons-material';
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
+import { ThemeContext } from '../../context/ThemeContext';
 
 import AdminOverview from './AdminOverview';
 import RegisterUser from './RegisterUser';
@@ -26,6 +28,7 @@ import Analytics from './Analytics';
 import KnowledgeBase from './KnowledgeBase';
 import Settings from './Settings';
 import AdminProfile from './AdminProfile';
+import AuditLogs from './AuditLogs';
 import NotificationCenter from '../../components/NotificationCenter';
 import api from '../../utils/api';
 
@@ -39,12 +42,14 @@ const navItems = [
     { label: 'All Complaints', icon: <ReportIcon />, path: '/admin/complaints' },
     { label: 'Knowledge Base', icon: <AutoStoriesIcon />, path: '/admin/knowledge-base' },
     { label: 'Analytics', icon: <BarChartIcon />, path: '/admin/analytics' },
+    { label: 'Audit Logs', icon: <SecurityIcon />, path: '/admin/audit-logs' },
     { label: 'Settings', icon: <SettingsIcon />, path: '/admin/settings' },
     { label: 'Profile', icon: <PersonAddIcon />, path: '/admin/profile' },
 ];
 
 const AdminLayout = () => {
     const { user, logout } = useContext(AuthContext);
+    const { mode, toggleTheme } = useContext(ThemeContext);
     const navigate = useNavigate();
     const location = useLocation();
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -64,18 +69,20 @@ const AdminLayout = () => {
     };
 
     const drawer = (
-        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}>
             {/* Header / Brand */}
             <Box component={Link} to="/admin/profile" sx={{
                 p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center',
-                background: 'linear-gradient(135deg, #1a237e 0%, #0d47a1 100%)',
+                background: mode === 'light' 
+                    ? 'linear-gradient(135deg, #1a237e 0%, #0d47a1 100%)'
+                    : 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
                 color: 'white',
                 textDecoration: 'none',
                 cursor: 'pointer',
                 '&:hover .MuiAvatar-root': { transform: 'scale(1.05)' }
             }}>
                 <Avatar sx={{
-                    width: 64, height: 64, bgcolor: '#42a5f5',
+                    width: 64, height: 64, bgcolor: mode === 'light' ? '#42a5f5' : '#334155',
                     fontSize: 26, fontWeight: 'bold', mb: 1.5,
                     border: '3px solid rgba(255,255,255,0.2)',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
@@ -105,13 +112,13 @@ const AdminLayout = () => {
                             sx={{
                                 borderRadius: 2, py: 1.3,
                                 '&.Mui-selected': {
-                                    bgcolor: '#e3f2fd',
-                                    color: '#1a237e',
-                                    '& .MuiListItemIcon-root': { color: '#1a237e' },
-                                    '&:hover': { bgcolor: '#bbdefb' }
+                                    bgcolor: mode === 'light' ? '#e3f2fd' : 'rgba(37, 99, 235, 0.15)',
+                                    color: mode === 'light' ? '#1a237e' : '#60a5fa',
+                                    '& .MuiListItemIcon-root': { color: mode === 'light' ? '#1a237e' : '#60a5fa' },
+                                    '&:hover': { bgcolor: mode === 'light' ? '#bbdefb' : 'rgba(37, 99, 235, 0.25)' }
                                 },
-                                color: '#546e7a',
-                                '& .MuiListItemIcon-root': { color: '#90a4ae' },
+                                color: mode === 'light' ? '#546e7a' : '#94a3b8',
+                                '& .MuiListItemIcon-root': { color: mode === 'light' ? '#90a4ae' : '#475569' },
                                 transition: 'all 0.2s',
                             }}
                         >
@@ -141,7 +148,7 @@ const AdminLayout = () => {
                     onClick={handleLogout}
                     sx={{
                         borderRadius: 2,
-                        '&:hover': { bgcolor: '#fff5f5' },
+                        '&:hover': { bgcolor: mode === 'light' ? '#fff5f5' : 'rgba(211, 47, 47, 0.1)' },
                         color: '#d32f2f'
                     }}
                 >
@@ -158,7 +165,9 @@ const AdminLayout = () => {
             <CssBaseline />
             <AppBar position="fixed" elevation={0} sx={{
                 zIndex: (theme) => theme.zIndex.drawer + 1,
-                background: 'linear-gradient(90deg, #1a237e 0%, #1565c0 100%)',
+                background: mode === 'light' 
+                    ? 'linear-gradient(90deg, #1a237e 0%, #1565c0 100%)'
+                    : 'linear-gradient(90deg, #1e293b 0%, #0f172a 100%)',
                 borderBottom: '1px solid rgba(255,255,255,0.1)'
             }}>
                 <Toolbar>
@@ -175,6 +184,12 @@ const AdminLayout = () => {
                     </Typography>
 
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Tooltip title={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`}>
+                            <IconButton color="inherit" onClick={toggleTheme}>
+                                {mode === 'light' ? <Brightness4 /> : <Brightness7 />}
+                            </IconButton>
+                        </Tooltip>
+
                         <NotificationCenter />
 
                         <Divider orientation="vertical" flexItem sx={{ mx: 1, bgcolor: 'rgba(255,255,255,0.1)' }} />
@@ -209,7 +224,12 @@ const AdminLayout = () => {
                 sx={{
                     width: DRAWER_WIDTH,
                     display: { xs: 'none', md: 'block' },
-                    '& .MuiDrawer-paper': { width: DRAWER_WIDTH, boxSizing: 'border-box', borderRight: '1px solid #edf2f7' },
+                    '& .MuiDrawer-paper': { 
+                        width: DRAWER_WIDTH, 
+                        boxSizing: 'border-box', 
+                        borderRight: mode === 'light' ? '1px solid #edf2f7' : '1px solid rgba(255,255,255,0.05)',
+                        bgcolor: 'background.paper'
+                    },
                 }}
             >
                 <Toolbar /> {/* Spacer */}
@@ -233,7 +253,7 @@ const AdminLayout = () => {
             <Box component="main" sx={{
                 flexGrow: 1,
                 minHeight: '100vh',
-                bgcolor: '#f8fafc',
+                bgcolor: 'background.default',
                 p: { xs: 2, sm: 3 },
                 mt: '64px',
                 ml: { md: 0 } // Sidebar is fixed
@@ -246,6 +266,7 @@ const AdminLayout = () => {
                     <Route path="/complaints" element={<AllComplaints />} />
                     <Route path="/knowledge-base" element={<KnowledgeBase />} />
                     <Route path="/analytics" element={<Analytics />} />
+                    <Route path="/audit-logs" element={<AuditLogs />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/profile" element={<AdminProfile />} />
                 </Routes>

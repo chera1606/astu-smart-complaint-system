@@ -301,3 +301,25 @@ export const getAnalytics = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+// @desc    Delete a complaint
+// @route   DELETE /api/complaints/:id
+// @access  Private/Admin
+export const deleteComplaint = async (req, res) => {
+    try {
+        const complaint = await Complaint.findById(req.params.id);
+
+        if (!complaint) {
+            return res.status(404).json({ message: 'Complaint not found' });
+        }
+
+        await complaint.deleteOne();
+        
+        // Audit log the deletion
+        await logAction('delete_complaint', req, { complaintId: req.params.id, trackingId: complaint.trackingId });
+
+        res.status(200).json({ message: 'Complaint deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
