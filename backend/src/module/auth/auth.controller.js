@@ -53,8 +53,12 @@ export const registerUser = async (req, res) => {
             email,
             password: hashedPassword,
             role: role || 'student',
-            ugrNumber: role === 'staff' || role === 'admin' ? null : ugrNumber
         };
+
+        if (role !== 'staff' && role !== 'admin') {
+            userData.ugrNumber = ugrNumber;
+            userData.studentDepartment = req.body.studentDepartment;
+        }
 
         if (dormBlock) userData.dormBlock = dormBlock;
         if (departmentId) userData.departmentId = departmentId;

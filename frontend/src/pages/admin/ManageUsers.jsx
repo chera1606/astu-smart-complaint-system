@@ -58,6 +58,7 @@ const ManageUsers = () => {
             email: user.email,
             role: user.role,
             departmentId: user.departmentId?._id || user.departmentId || '',
+            studentDepartment: user.studentDepartment || '',
             ugrNumber: user.ugrNumber || '',
             dormBlock: user.dormBlock || ''
         });
@@ -187,7 +188,7 @@ const ManageUsers = () => {
                                     </TableCell>
                                     <TableCell>
                                         <Typography variant="body2" color="text.secondary">
-                                            {u.departmentId?.name || '—'}
+                                            {u.studentDepartment || u.departmentId?.name || '—'}
                                         </Typography>
                                     </TableCell>
                                     <TableCell>
@@ -270,10 +271,18 @@ const ManageUsers = () => {
                                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                                         />
                                     </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            fullWidth label="Department"
+                                            value={editData.studentDepartment}
+                                            onChange={(e) => setEditData({ ...editData, studentDepartment: e.target.value })}
+                                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                        />
+                                    </Grid>
                                 </>
                             )}
 
-                            {(editData.role === 'staff' || editData.role === 'student') && (
+                            {editData.role === 'staff' && (
                                 <Grid item xs={12}>
                                     <TextField
                                         fullWidth select label="Department"

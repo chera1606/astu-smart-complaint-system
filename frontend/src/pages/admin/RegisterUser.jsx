@@ -20,6 +20,7 @@ const RegisterUser = () => {
         password: '',
         role: 'student',
         departmentId: '',
+        studentDepartment: '',
         ugrNumber: '',
         dormBlock: ''
     });
@@ -55,7 +56,7 @@ const RegisterUser = () => {
         try {
             const res = await api.post('/auth/register', payload);
             setSuccess(`User "${res.data.name}" created successfully! ${res.data.role === 'student' ? 'UGR: ' + res.data.ugrNumber : 'User ID: ' + res.data.userId}`);
-            setFormData({ name: '', email: '', password: '', role: 'student', departmentId: '', ugrNumber: '', dormBlock: '' });
+            setFormData({ name: '', email: '', password: '', role: 'student', departmentId: '', studentDepartment: '', ugrNumber: '', dormBlock: '' });
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to create user');
         } finally {
@@ -179,16 +180,13 @@ const RegisterUser = () => {
                                     <Grid item xs={12} sm={6}>
                                         <TextField
                                             fullWidth
-                                            select
-                                            label="Department"
-                                            name="departmentId"
-                                            value={formData.departmentId}
+                                            label="Department / Faculty"
+                                            name="studentDepartment"
+                                            placeholder="e.g. Software Engineering"
+                                            value={formData.studentDepartment}
                                             onChange={handleChange}
                                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                                        >
-                                            <MenuItem value="">Unassigned</MenuItem>
-                                            {departments.map(d => <MenuItem key={d._id} value={d._id}>{d.name}</MenuItem>)}
-                                        </TextField>
+                                        />
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
                                         <TextField

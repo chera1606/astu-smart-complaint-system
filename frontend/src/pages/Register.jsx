@@ -10,7 +10,8 @@ const Register = () => {
         email: '',
         password: '',
         role: 'student',
-        departmentId: ''
+        departmentId: '',
+        studentDepartment: ''
     });
     const [categories, setCategories] = useState([]);
     const { register, error } = useContext(AuthContext);
@@ -103,6 +104,18 @@ const Register = () => {
                             <MenuItem value="staff">Staff</MenuItem>
                             <MenuItem value="admin">Admin</MenuItem>
                         </TextField>
+
+                        {formData.role === 'student' && (
+                            <TextField
+                                margin="normal"
+                                fullWidth
+                                name="studentDepartment"
+                                label="Department / Faculty"
+                                placeholder="e.g. Computer Science"
+                                value={formData.studentDepartment}
+                                onChange={handleChange}
+                            />
+                        )}
 
                         {formData.role === 'staff' && (
                             <TextField

@@ -84,7 +84,7 @@ const StudentProfile = () => {
 
                             <Paper sx={{ mt: 4, p: 2.5, bgcolor: '#f8fafc', borderRadius: 3, border: '1px solid #e2e8f0' }}>
                                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1, fontWeight: 'bold' }}>DEPARTMENT / FACULTY</Typography>
-                                <Typography variant="body1" fontWeight="bold">{user?.departmentId?.name || 'Science & Technology Faculty'}</Typography>
+                                <Typography variant="body1" fontWeight="bold">{user?.studentDepartment || user?.departmentId?.name || 'Science & Technology Faculty'}</Typography>
                                 <Typography variant="caption" color="text.secondary">Your complaints are routed to this department by default.</Typography>
                             </Paper>
                         </CardContent>
