@@ -8,8 +8,10 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MenuIcon from '@mui/icons-material/Menu';
+import { Brightness4, Brightness7 } from '@mui/icons-material';
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
+import { ThemeContext } from '../../context/ThemeContext';
 
 import StaffOverview from './StaffOverview';
 import AssignedComplaints from './AssignedComplaints';
@@ -28,6 +30,7 @@ const navItems = [
 
 const StaffLayout = () => {
     const { user, logout } = useContext(AuthContext);
+    const { mode, toggleTheme } = useContext(ThemeContext);
     const navigate = useNavigate();
     const location = useLocation();
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -47,15 +50,17 @@ const StaffLayout = () => {
     };
 
     const drawer = (
-        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}>
             {/* Profile Header */}
             <Box sx={{
                 p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center',
-                background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
+                background: mode === 'light' 
+                    ? 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)'
+                    : 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
                 color: 'white',
             }}>
                 <Avatar sx={{
-                    width: 64, height: 64, bgcolor: '#42a5f5',
+                    width: 64, height: 64, bgcolor: mode === 'light' ? '#42a5f5' : '#334155',
                     fontSize: 26, fontWeight: 'bold', mb: 1,
                     border: '3px solid rgba(255,255,255,0.3)',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
@@ -84,13 +89,13 @@ const StaffLayout = () => {
                             sx={{
                                 borderRadius: 2, py: 1.2,
                                 '&.Mui-selected': {
-                                    bgcolor: '#e3f2fd',
-                                    color: '#1565c0',
-                                    '& .MuiListItemIcon-root': { color: '#1565c0' },
-                                    '&:hover': { bgcolor: '#bbdefb' }
+                                    bgcolor: mode === 'light' ? '#e3f2fd' : 'rgba(37, 99, 235, 0.15)',
+                                    color: mode === 'light' ? '#1565c0' : '#60a5fa',
+                                    '& .MuiListItemIcon-root': { color: mode === 'light' ? '#1565c0' : '#60a5fa' },
+                                    '&:hover': { bgcolor: mode === 'light' ? '#bbdefb' : 'rgba(37, 99, 235, 0.25)' }
                                 },
-                                color: '#555',
-                                '& .MuiListItemIcon-root': { color: '#888' },
+                                color: mode === 'light' ? '#555' : '#94a3b8',
+                                '& .MuiListItemIcon-root': { color: mode === 'light' ? '#888' : '#475569' },
                                 transition: 'all 0.2s',
                             }}
                         >
@@ -133,7 +138,9 @@ const StaffLayout = () => {
             <CssBaseline />
             <AppBar position="fixed" elevation={0} sx={{
                 zIndex: (theme) => theme.zIndex.drawer + 1,
-                background: 'linear-gradient(135deg, #1565c0 0%, #1976d2 100%)',
+                background: mode === 'light' 
+                    ? 'linear-gradient(135deg, #1565c0 0%, #1976d2 100%)'
+                    : 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
                 borderBottom: '1px solid rgba(255,255,255,0.1)'
             }}>
                 <Toolbar>
@@ -150,6 +157,12 @@ const StaffLayout = () => {
                     </Typography>
 
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Tooltip title={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`}>
+                            <IconButton color="inherit" onClick={toggleTheme}>
+                                {mode === 'light' ? <Brightness4 /> : <Brightness7 />}
+                            </IconButton>
+                        </Tooltip>
+
                         <NotificationCenter />
 
                         <Divider orientation="vertical" flexItem sx={{ mx: 0.5, bgcolor: 'rgba(255,255,255,0.2)' }} />
@@ -189,7 +202,12 @@ const StaffLayout = () => {
                 sx={{
                     width: DRAWER_WIDTH,
                     display: { xs: 'none', md: 'block' },
-                    '& .MuiDrawer-paper': { width: DRAWER_WIDTH, boxSizing: 'border-box', borderRight: '1px solid #e8edf2' },
+                    '& .MuiDrawer-paper': { 
+                        width: DRAWER_WIDTH, 
+                        boxSizing: 'border-box', 
+                        borderRight: mode === 'light' ? '1px solid #e8edf2' : '1px solid rgba(255,255,255,0.05)',
+                        bgcolor: 'background.paper'
+                    },
                 }}
             >
                 <Toolbar /> {/* Spacer */}
@@ -209,7 +227,7 @@ const StaffLayout = () => {
             {/* Main Content */}
             <Box component="main" sx={{
                 flexGrow: 1, p: { xs: 2, md: 3 }, mt: '64px',
-                minHeight: '100vh', bgcolor: '#f0f4f8',
+                minHeight: '100vh', bgcolor: 'background.default',
                 ml: { md: `${DRAWER_WIDTH}px` }
             }}>
                 <Routes>

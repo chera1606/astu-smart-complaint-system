@@ -9,6 +9,8 @@ import Login from './pages/Login';
 import AdminLayout from './pages/admin/AdminLayout';
 import StudentLayout from './pages/student/StudentLayout';
 import StaffLayout from './pages/staff/StaffLayout';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 const PrivateRoute = ({ children, allowedRoles }) => {
     const { user, loading } = useContext(AuthContext);
@@ -37,6 +39,9 @@ function App() {
                 <Route path="/login/student" element={<Login forcedRole="student" />} />
                 <Route path="/login/staff" element={<Login forcedRole="staff" />} />
                 <Route path="/login/admin" element={<Login forcedRole="admin" />} />
+
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password/:token" element={<ResetPassword />} />
 
                 {/* Admin Routes */}
                 <Route path="/admin/*" element={

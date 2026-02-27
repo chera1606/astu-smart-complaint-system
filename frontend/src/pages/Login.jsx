@@ -1,13 +1,18 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { Container, Box, Typography, TextField, Button, Alert, Paper, Tabs, Tab } from '@mui/material';
+import { ThemeContext } from '../context/ThemeContext';
+import { Container, Box, Typography, TextField, Button, Alert, Paper, Tabs, Tab, IconButton, Tooltip } from '@mui/material';
+import { Brightness4, Brightness7 } from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
 
 const Login = ({ forcedRole }) => {
     const [userId, setUserId] = useState('');
     const [password, setPassword] = useState('');
     const [localError, setLocalError] = useState(null);
     const { login, logout, error: authError } = useContext(AuthContext);
+    const { mode, toggleTheme } = useContext(ThemeContext);
+    const theme = useTheme();
     const navigate = useNavigate();
 
     const getRoleInfo = () => {
@@ -24,7 +29,8 @@ const Login = ({ forcedRole }) => {
         e.preventDefault();
         setLocalError(null);
         try {
-            const user = await login(userId, password);
+            const trimmedUserId = userId.trim();
+            const user = await login(trimmedUserId, password);
 
             if (user.role !== forcedRole) {
                 logout();
@@ -48,8 +54,20 @@ const Login = ({ forcedRole }) => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)'
+            background: mode === 'light' 
+                ? 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)'
+                : 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+            position: 'relative'
         }}>
+            {/* Theme Toggle Button */}
+            <Box sx={{ position: 'absolute', top: 20, right: 20 }}>
+                <Tooltip title={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`}>
+                    <IconButton onClick={toggleTheme} sx={{ color: 'text.secondary' }}>
+                        {mode === 'light' ? <Brightness4 /> : <Brightness7 />}
+                    </IconButton>
+                </Tooltip>
+            </Box>
+
             <Container component="main" maxWidth="xs">
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <Typography variant="h4" fontWeight={900} color="primary" gutterBottom sx={{ mb: 1, letterSpacing: -1 }}>
@@ -89,8 +107,18 @@ const Login = ({ forcedRole }) => {
                                 autoComplete="current-password"
                                 value={password}
                                 onChange={e => setPassword(e.target.value)}
-                                sx={{ mb: 3 }}
+                                sx={{ mb: 1 }}
                             />
+                            <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
+                                <Link to="/forgot-password" style={{ 
+                                    textDecoration: 'none', 
+                                    fontSize: '0.85rem', 
+                                    fontWeight: 700,
+                                    color: theme.palette.primary.main
+                                }}>
+                                    Forgot Password?
+                                </Link>
+                            </Box>
                             <Button
                                 type="submit"
                                 fullWidth
@@ -109,7 +137,7 @@ const Login = ({ forcedRole }) => {
                             </Button>
                         </Box>
 
-                        <Box sx={{ mt: 4, pt: 3, textAlign: 'center', borderTop: '1px solid #e2e8f0' }}>
+                        <Box sx={{ mt: 4, pt: 3, textAlign: 'center', borderTop: `1px solid ${theme.palette.divider}` }}>
                             <Typography variant="body2" color="text.secondary">
                                 Secure Access • <Box component="span" sx={{ color: 'primary.main', fontWeight: 700 }}>ASTU ICT</Box>
                             </Typography>
